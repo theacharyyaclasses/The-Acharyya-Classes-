@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Online Examination Portal</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- jsPDF for automatic multi-image to PDF conversion -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    /* Theme color variables */
+    .theme-indigo  { --primary: #4f46e5; --primary-hover: #4338ca; --primary-light: #e0e7ff; }
+    .theme-emerald { --primary: #059669; --primary-hover: #047857; --primary-light: #d1fae5; }
+    .theme-rose    { --primary: #e11d48; --primary-hover: #be123c; --primary-light: #ffe4e6; }
+    .theme-amber   { --primary: #d97706; --primary-hover: #b45309; --primary-light: #fef3c7; }
+    .theme-slate   { --primary: #334155; --primary-hover: #1e293b; --primary-light: #f1f5f9; }
+
+    .bg-theme { background-color: var(--primary) !important; }
+    .bg-theme-hover:hover { background-color: var(--primary-hover) !important; }
+    .text-theme { color: var(--primary) !important; }
+    .border-theme { border-color: var(--primary) !important; }
+    .bg-theme-light { background-color: var(--primary-light) !important; }
+  </style>
+</head>
+<body id="appBody" class="bg-gray-50 text-gray-800 min-h-screen flex flex-col font-sans theme-indigo">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="bg-white shadow border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="showView('homeView')">
+        <img id="navLogo" src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=120&auto=format&fit=crop&q=80" alt="Logo" class="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-200" />
+        <h1 id="navHeading" class="text-xl font-bold tracking-tight text-gray-900">Online Examination Portal</h1>
+      </div>
+      <!-- Topmost Admin Button -->
+      <button onclick="openAdminLoginModal()" class="px-4 py-2 text-sm font-semibold text-white bg-theme bg-theme-hover rounded-lg shadow-sm transition flex items-center space-x-1.5">
+        <i class="fa-solid fa-user-shield"></i>
+        <span>Admin</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT CONTAINER ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
+
+    <!-- ================= 1. HOME VIEW ================= -->
+    <section id="homeView" class="py-10 flex flex-col items-center justify-center text-center">
+      <div id="heroImageContainer" class="w-full max-w-3xl h-60 rounded-2xl overflow-hidden shadow-lg mb-8 relative border border-gray-200">
+        <img id="heroImage" src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&auto=format&fit=crop&q=80" alt="Banner" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-black/45 flex items-center justify-center p-4">
+          <h2 id="homeHeading" class="text-3xl sm:text-4xl font-extrabold text-white drop-shadow-md">Online Examination Portal</h2>
+        </div>
+      </div>
+
+      <p class="text-lg text-gray-600 mb-8 max-w-lg font-medium">Welcome to the portal. Please select your role to proceed:</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg">
+        <!-- Student Button -->
+        <button onclick="initStudentPortal()" class="flex flex-col items-center justify-center p-8 bg-white border-2 border-theme rounded-2xl shadow-sm hover:shadow-xl hover:bg-theme-light transition duration-300 group">
+          <div class="w-16 h-16 rounded-full bg-theme flex items-center justify-center text-white text-3xl mb-4 group-hover:scale-110 transition">
+            <i class="fa-solid fa-user-graduate"></i>
+          </div>
+          <span class="text-xl font-bold text-gray-800">You are a student</span>
+          <span class="text-xs text-gray-500 mt-1">Attend tests & click pictures of answer sheets</span>
+        </button>
+
+        <!-- Teacher Button -->
+        <button onclick="initTeacherLogin()" class="flex flex-col items-center justify-center p-8 bg-white border-2 border-theme rounded-2xl shadow-sm hover:shadow-xl hover:bg-theme-light transition duration-300 group">
+          <div class="w-16 h-16 rounded-full bg-theme flex items-center justify-center text-white text-3xl mb-4 group-hover:scale-110 transition">
+            <i class="fa-solid fa-chalkboard-user"></i>
+          </div>
+          <span class="text-xl font-bold text-gray-800">You are a teacher</span>
+          <span class="text-xs text-gray-500 mt-1">Upload question papers & review submissions</span>
+        </button>
+      </div>
+    </section>
+
+
+    <!-- ================= 2. ADMIN PAGES ================= -->
+
+    <!-- Admin Page 1: Heading, Heading Image & Theme -->
+    <section id="adminThemeView" class="hidden max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-gray-100">
+      <div class="border-b pb-4 mb-6">
+        <span class="text-xs font-bold uppercase tracking-wider text-theme">Admin Setup • Page 1 of 3</span>
+        <h2 class="text-2xl font-bold text-gray-900 mt-1">Customize Portal Appearance</h2>
+      </div>
+
+      <div class="space-y-5">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Change Website Heading</label>
+          <input type="text" id="adminHeadingInput" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. Apex High School Online Exams" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Upload Image on the Heading</label>
+          <input type="file" id="adminHeadingImageInput" accept="image/*" class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-theme-light file:text-theme" />
+          <div class="mt-2 text-xs text-gray-500">Current Preview:</div>
+          <div class="mt-1 h-36 rounded-lg overflow-hidden border bg-gray-50">
+            <img id="adminHeadingPreview" src="" class="w-full h-full object-cover" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Choose Website Theme</label>
+          <div class="grid grid-cols-5 gap-3 pt-1">
+            <button type="button" onclick="previewTheme('indigo')" class="py-2.5 rounded-lg bg-indigo-600 text-white font-bold text-xs shadow-sm">Indigo</button>
+            <button type="button" onclick="previewTheme('emerald')" class="py-2.5 rounded-lg bg-emerald-600 text-white font-bold text-xs shadow-sm">Emerald</button>
+            <button type="button" onclick="previewTheme('rose')" class="py-2.5 rounded-lg bg-rose-600 text-white font-bold text-xs shadow-sm">Rose</button>
+            <button type="button" onclick="previewTheme('amber')" class="py-2.5 rounded-lg bg-amber-600 text-white font-bold text-xs shadow-sm">Amber</button>
+            <button type="button" onclick="previewTheme('slate')" class="py-2.5 rounded-lg bg-slate-700 text-white font-bold text-xs shadow-sm">Slate</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-4 border-t flex justify-end space-x-3">
+        <!-- Exact required button: Keep as it is -->
+        <button onclick="saveAdminAppearance(true)" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition">
+          keep as it is
+        </button>
+        <button onclick="saveAdminAppearance(false)" class="px-5 py-2.5 bg-theme bg-theme-hover text-white font-semibold rounded-lg shadow transition">
+          Save Changes & Proceed
+        </button>
+      </div>
+    </section>
+
+    <!-- Admin Page 2: Manage Subjects & Teachers -->
+    <section id="adminTeacherMgmtView" class="hidden max-w-4xl mx-auto space-y-6">
+      <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-theme">Admin Setup • Page 2 of 3</span>
+          <h2 class="text-2xl font-bold text-gray-900 mt-1">Manage Subjects & Teachers</h2>
+        </div>
+        <!-- Exact required button: no teachers will add now -->
+        <button onclick="goToAdminDashboard()" class="px-5 py-2.5 bg-theme bg-theme-hover text-white font-semibold rounded-lg shadow transition">
+          no teachers will add now <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Subjects Column -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+          <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+            <i class="fa-solid fa-book mr-2 text-theme"></i> Add / Remove Subjects
+          </h3>
+          <div class="flex space-x-2 mb-4">
+            <input type="text" id="newSubjectInput" placeholder="Subject Name (e.g. Mathematics)" class="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none" />
+            <button onclick="addSubject()" class="px-4 py-2 bg-theme text-white text-sm font-semibold rounded-lg shadow">Add</button>
+          </div>
+          <ul id="adminSubjectList" class="divide-y divide-gray-100 max-h-60 overflow-y-auto"></ul>
+        </div>
+
+        <!-- Add Teacher for Specific Subject -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+          <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+            <i class="fa-solid fa-user-plus mr-2 text-theme"></i> Add Teacher for Specific Subject
+          </h3>
+          <form onsubmit="handleAddTeacher(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Teacher Full Name</label>
+              <input type="text" id="newTeacherName" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. Dr. A. Sharma" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Specific Subject</label>
+              <select id="newTeacherSubject" required class="w-full px-3 py-2 border rounded-lg text-sm bg-white"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Create Password for That Teacher</label>
+              <input type="text" id="newTeacherPassword" required class="w-full px-3 py-2 border rounded-lg text-sm font-mono" placeholder="e.g. Teach@2026" />
+            </div>
+            <button type="submit" class="w-full py-2.5 bg-theme bg-theme-hover text-white font-semibold rounded-lg shadow text-sm transition">
+              Save Teacher
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Admin Page 3: Full Overview Dashboard -->
+    <section id="adminDashboardView" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-theme">Master Administrative Overview</span>
+          <h2 class="text-2xl font-bold text-gray-900 mt-1">Admin Dashboard</h2>
+          <p class="text-xs text-gray-500">View all teachers, passwords, exams, student test records, and downloadable PDF answer sheets</p>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="showView('adminTeacherMgmtView')" class="px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg text-sm hover:bg-gray-50">
+            <i class="fa-solid fa-sliders mr-1"></i> Manage Subjects / Teachers
+          </button>
+          <button onclick="showView('homeView')" class="px-4 py-2 bg-gray-800 text-white font-semibold rounded-lg text-sm hover:bg-gray-900">
+            Exit Admin
+          </button>
+        </div>
+      </div>
+
+      <!-- 1. All Teachers & Passwords -->
+      <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+          <i class="fa-solid fa-users mr-2 text-theme"></i> All Registered Teachers & Passwords
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-gray-100 text-gray-600 uppercase text-xs">
+                <th class="p-3 rounded-l-lg">Teacher Name</th>
+                <th class="p-3">Assigned Subject</th>
+                <th class="p-3">Password</th>
+                <th class="p-3 rounded-r-lg text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminTeachersTableBody" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. All Exams & Question Papers -->
+      <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+          <i class="fa-solid fa-file-pen mr-2 text-theme"></i> Exams Posted by Teachers (Question Papers)
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-gray-100 text-gray-600 uppercase text-xs">
+                <th class="p-3 rounded-l-lg">Exam Name</th>
+                <th class="p-3">Subject & Class</th>
+                <th class="p-3">Teacher</th>
+                <th class="p-3">Duration</th>
+                <th class="p-3">Test Password</th>
+                <th class="p-3">Question Paper</th>
+                <th class="p-3 rounded-r-lg text-right">Remove Test</th>
+              </tr>
+            </thead>
+            <tbody id="adminTestsTableBody" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. Students Attended & Downloadable Answer Sheet PDF -->
+      <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+          <i class="fa-solid fa-square-check mr-2 text-theme"></i> Students Attended Tests & Answer Sheets
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-gray-100 text-gray-600 uppercase text-xs">
+                <th class="p-3 rounded-l-lg">Student Details</th>
+                <th class="p-3">Class & School</th>
+                <th class="p-3">WhatsApp Number</th>
+                <th class="p-3">Exam Name</th>
+                <th class="p-3">Submission Time</th>
+                <th class="p-3 rounded-r-lg text-right">Download Answer Sheet</th>
+              </tr>
+            </thead>
+            <tbody id="adminSubmissionsTableBody" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ================= 3. TEACHER PAGES ================= -->
+
+    <!-- Teacher Login: Select Name and Enter Admin-Created Password -->
+    <section id="teacherLoginView" class="hidden max-w-md mx-auto bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 bg-theme-light text-theme rounded-full flex items-center justify-center mx-auto text-2xl mb-2">
+          <i class="fa-solid fa-chalkboard-user"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900">Teacher Login</h2>
+        <p class="text-xs text-gray-500 mt-1">Select your name and enter the password created by admin</p>
+      </div>
+
+      <form onsubmit="handleTeacherLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Select Your Name</label>
+          <select id="teacherSelectDropdown" required class="w-full px-4 py-2 border rounded-lg bg-white text-sm focus:outline-none"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Enter Password</label>
+          <input type="password" id="teacherPasswordInput" required class="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none" placeholder="••••••••" />
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-theme bg-theme-hover text-white font-semibold rounded-lg shadow transition">
+          Login
+        </button>
+      </form>
+    </section>
+
+    <!-- Teacher Page: Post New Test (Class 7-12, Name, Duration, Password, Pictures as Question Paper) -->
+    <section id="teacherCreateTestView" class="hidden max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-gray-100 space-y-5">
+      <div class="flex justify-between items-center border-b pb-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-theme" id="teacherBadgeInfo">Teacher Portal</span>
+          <h2 class="text-2xl font-bold text-gray-900 mt-1">Post New Exam</h2>
+        </div>
+        <!-- Teacher Dashboard Button -->
+        <button onclick="goToTeacherDashboard()" class="px-4 py-2 bg-theme bg-theme-hover text-white text-sm font-semibold rounded-lg shadow flex items-center space-x-1.5">
+          <i class="fa-solid fa-table-columns"></i>
+          <span>Dashboard</span>
+        </button>
+      </div>
+
+      <form onsubmit="handlePostTest(event)" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Select Class (7 to 12)</label>
+            <select id="createTestClass" required class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+              <option value="7">Class 7</option>
+              <option value="8">Class 8</option>
+              <option value="9">Class 9</option>
+              <option value="10">Class 10</option>
+              <option value="11">Class 11</option>
+              <option value="12">Class 12</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Exam Duration (in Minutes)</label>
+            <input type="number" id="createTestDuration" min="1" max="360" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. 45" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Exam Name</label>
+          <input type="text" id="createTestName" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. Unit Test - Algebra & Geometry" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Password for That Test</label>
+          <input type="text" id="createTestPassword" required class="w-full px-3 py-2 border rounded-lg text-sm font-mono" placeholder="e.g. Math@789" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Upload Pictures as Question Paper</label>
+          <input type="file" id="createTestQPImages" multiple accept="image/*" required class="w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-theme-light file:text-theme" onchange="previewQuestionPaperImages(event)" />
+          <p class="text-xs text-gray-400 mt-1">Select all images/pages of the question paper</p>
+        </div>
+
+        <!-- Thumbnails of selected question paper images -->
+        <div id="qpThumbnailsContainer" class="grid grid-cols-4 gap-2 pt-1 max-h-36 overflow-y-auto"></div>
+
+        <button type="submit" id="btnPublishExam" class="w-full py-3 bg-theme bg-theme-hover text-white font-bold rounded-xl shadow transition">
+          Publish Exam
+        </button>
+      </form>
+    </section>
+
+    <!-- Teacher Dashboard: ONLY this teacher's tests and attended students -->
+    <section id="teacherDashboardView" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-theme">Teacher Panel</span>
+          <h2 class="text-2xl font-bold text-gray-900 mt-1" id="teacherGreeting">Teacher Dashboard</h2>
+          <p class="text-xs text-gray-500" id="teacherSubjectBadge"></p>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="showView('teacherCreateTestView')" class="px-4 py-2 bg-theme bg-theme-hover text-white font-semibold rounded-lg text-sm shadow flex items-center space-x-1">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add Test</span>
+          </button>
+          <button onclick="logoutTeacher()" class="px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg text-sm hover:bg-gray-50">
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Teacher's Posted Tests -->
+      <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+          <i class="fa-solid fa-folder-open mr-2 text-theme"></i> My Posted Tests
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-gray-100 text-gray-600 uppercase text-xs">
+                <th class="p-3 rounded-l-lg">Exam Name</th>
+                <th class="p-3">Class</th>
+                <th class="p-3">Duration</th>
+                <th class="p-3">Exam Password</th>
+                <th class="p-3">Question Paper</th>
+                <th class="p-3 rounded-r-lg text-right">Remove</th>
+              </tr>
+            </thead>
+            <tbody id="teacherTestsTableBody" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Students who attended THIS teacher's tests -->
+      <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+          <i class="fa-solid fa-users-viewfinder mr-2 text-theme"></i> Students Attended My Tests
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-gray-100 text-gray-600 uppercase text-xs">
+                <th class="p-3 rounded-l-lg">Student Name</th>
+                <th class="p-3">Class</th>
+                <th class="p-3">School</th>
+                <th class="p-3">WhatsApp Number</th>
+                <th class="p-3">Submission Time</th>
+                <th class="p-3 rounded-r-lg text-right">Download Answer Sheet</th>
+              </tr>
+            </thead>
+            <tbody id="teacherSubmissionsTableBody" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ================= 4. STUDENT PAGES ================= -->
+
+    <!-- Student Registration & Test Selector Form -->
+    <section id="studentPortalView" class="hidden max-w-xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-gray-100">
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 bg-theme-light text-theme rounded-full flex items-center justify-center mx-auto text-2xl mb-2">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900">Student Entry Form</h2>
+        <p class="text-xs text-gray-500 mt-1">Enter details, choose class & subject to access tests</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Your Full Name</label>
+          <input type="text" id="stdName" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. Suman Roy" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Class (7 to 12)</label>
+            <select id="stdClass" onchange="filterAvailableTestsForStudent()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+              <option value="7">Class 7</option>
+              <option value="8">Class 8</option>
+              <option value="9">Class 9</option>
+              <option value="10">Class 10</option>
+              <option value="11">Class 11</option>
+              <option value="12">Class 12</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Select Subject</label>
+            <select id="stdSubject" onchange="filterAvailableTestsForStudent()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white"></select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">School Name</label>
+          <input type="text" id="stdSchool" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. Holy Cross High School" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">WhatsApp Number</label>
+          <input type="tel" id="stdWhatsapp" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. +91 9876543210" />
+        </div>
+
+        <!-- Available Tests for Subject & Class -->
+        <div class="pt-2 border-t">
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Available Tests</label>
+          <select id="stdAvailableTests" onchange="onStudentExamSelectionChange()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white font-medium"></select>
+          <p id="noTestWarning" class="text-xs text-red-500 mt-1 hidden">No tests scheduled for this class and subject yet.</p>
+        </div>
+
+        <!-- Exam Password Input -->
+        <div id="examPasswordBox" class="space-y-3 pt-2 hidden">
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Type Exam Password</label>
+            <input type="password" id="stdExamPasswordInput" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Enter password provided by teacher" />
+          </div>
+          <button type="button" onclick="verifyStudentExamPassword()" class="w-full py-2 bg-gray-800 hover:bg-gray-900 text-white text-sm font-semibold rounded-lg transition">
+            Verify Password
+          </button>
+        </div>
+
+        <!-- Start Button (Revealed after correct password) -->
+        <div id="startExamButtonContainer" class="pt-2 hidden">
+          <button onclick="startStudentExamSession()" class="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white text-lg font-bold rounded-xl shadow-lg transition flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-play"></i>
+            <span>START TEST</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Active Exam Session: Shows question paper as images for allotted time -->
+    <section id="examSessionView" class="hidden max-w-4xl mx-auto space-y-4">
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border border-gray-100 flex flex-wrap justify-between items-center sticky top-16 z-40">
+        <div>
+          <h2 id="sessionExamTitle" class="text-xl font-bold text-gray-900">Exam</h2>
+          <p id="sessionExamDetails" class="text-xs text-gray-500"></p>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="text-right">
+            <span class="text-[10px] text-gray-500 block uppercase font-bold tracking-wider">Allotted Time Remaining</span>
+            <span id="sessionTimerText" class="text-2xl sm:text-3xl font-mono font-extrabold text-red-600">00:00</span>
+          </div>
+          <button onclick="finishTestEarly()" class="px-4 py-2 bg-theme bg-theme-hover text-white text-xs font-bold rounded-lg shadow">
+            Finish & Click Answers
+          </button>
+        </div>
+      </div>
+
+      <!-- Question Paper Images Display for allotted time -->
+      <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-700 mb-4 flex items-center">
+          <i class="fa-solid fa-images text-theme mr-2"></i> Question Paper
+        </h3>
+        <div id="qpImagesGallery" class="space-y-6 flex flex-col items-center"></div>
+      </div>
+    </section>
+
+    <!-- Answer Sheet Upload: Clicking pictures of answer sheets -->
+    <section id="answerUploadView" class="hidden max-w-xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-gray-100">
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-2xl mb-2">
+          <i class="fa-solid fa-camera"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900">Upload Answer Sheets</h2>
+        <p class="text-xs text-gray-500 mt-1">
+          Click pictures of your answer sheets. All pages will be automatically converted into a single PDF for your teacher and admin.
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Direct Camera Snap Button & File Selector -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Button 1: Click picture using Camera directly -->
+          <label class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-theme rounded-xl cursor-pointer bg-theme-light hover:opacity-90 transition text-center">
+            <i class="fa-solid fa-camera text-2xl text-theme mb-1"></i>
+            <span class="text-xs font-bold text-gray-800">Click Picture with Camera</span>
+            <span class="text-[10px] text-gray-500">Capture answer page directly</span>
+            <input type="file" accept="image/*" capture="environment" class="hidden" onchange="handleSingleCameraSnap(event)" />
+          </label>
+
+          <!-- Button 2: Choose multiple pictures from gallery -->
+          <label class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:border-theme transition text-center">
+            <i class="fa-solid fa-images text-2xl text-gray-400 mb-1"></i>
+            <span class="text-xs font-bold text-gray-800">Choose from Photos</span>
+            <span class="text-[10px] text-gray-500">Select multiple images</span>
+            <input type="file" multiple accept="image/*" class="hidden" onchange="handleMultipleAnswerPhotos(event)" />
+          </label>
+        </div>
+
+        <!-- Thumbnails of clicked/selected answer sheets with page numbers -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-semibold text-gray-600 mb-1">
+            <span>Captured Pages (<span id="capturedCount">0</span>)</span>
+            <span class="text-[10px] text-gray-400">Pages will be compiled in order</span>
+          </div>
+          <div id="answerImagesPreviewGrid" class="grid grid-cols-3 gap-2 min-h-24 max-h-52 overflow-y-auto p-2 bg-gray-50 border rounded-xl">
+            <div id="emptyPhotosPrompt" class="col-span-3 text-center text-gray-400 text-xs py-8">
+              No answer sheets captured yet. Click or select pictures above.
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button: Automatically converts into PDF -->
+        <button id="btnSubmitAnswers" onclick="convertAnswerSheetsToPdfAndSubmit()" disabled class="w-full py-3.5 bg-gray-400 text-white font-bold rounded-xl shadow cursor-not-allowed transition flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-file-pdf"></i>
+          <span>Convert into PDF & Submit</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Submission Finished Page with exact required message -->
+    <section id="submissionSuccessView" class="hidden max-w-md mx-auto text-center py-12 bg-white p-8 rounded-2xl shadow-md border border-gray-100">
+      <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-4xl mb-4 animate-bounce">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-3">Submitted Successfully!</h2>
+      <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+        <p class="text-base font-semibold text-green-900">
+          "Your checked answer sheet will be sent to your WhatsApp number shortly"
+        </p>
+      </div>
+      <button onclick="showView('homeView')" class="px-6 py-2.5 bg-theme bg-theme-hover text-white font-semibold rounded-lg shadow transition">
+        <i class="fa-solid fa-house mr-1"></i> Return Home
+      </button>
+    </section>
+
+  </main>
+
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Admin Login Modal (Password: AbikAdmin@2001) -->
+  <div id="adminLoginModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+      <div class="w-12 h-12 bg-theme-light text-theme rounded-full flex items-center justify-center mx-auto text-xl mb-3">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <h3 class="text-lg font-bold text-gray-900 mb-1">Admin Login</h3>
+      <p class="text-xs text-gray-500 mb-4">Enter password to access admin pages</p>
+      <input type="password" id="adminPasswordInput" placeholder="Password" class="w-full px-4 py-2 border rounded-lg text-sm mb-4 focus:outline-none" />
+      <div class="flex space-x-2">
+        <button onclick="closeAdminLoginModal()" class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg">Cancel</button>
+        <button onclick="verifyAdminLogin()" class="flex-1 py-2 bg-theme bg-theme-hover text-white text-sm font-semibold rounded-lg">Log In</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Question Paper Gallery Modal (For Admin & Teacher previews) -->
+  <div id="qpGalleryModal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-4 h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center mb-3 border-b pb-2">
+        <h3 id="qpGalleryModalTitle" class="text-base font-bold text-gray-900">Question Paper Pictures</h3>
+        <button onclick="closeQPGalleryModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold"><i class="fa-solid fa-times"></i></button>
+      </div>
+      <div id="qpGalleryModalContent" class="flex-1 overflow-y-auto bg-gray-100 rounded-lg p-4 space-y-4 flex flex-col items-center"></div>
+    </div>
+  </div>
+
+
+  <!-- ================= JAVASCRIPT SYSTEM ENGINE ================= -->
+  <script>
+    /* -------------------------------------------------------------
+       1. INDEXED-DB STORAGE ENGINE
+       ------------------------------------------------------------- */
+    const DB_NAME = "OnlineExamAppDB_v2";
+    const DB_VERSION = 1;
+    let idb = null;
+
+    function openDatabase() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('store')) {
+            db.createObjectStore('store');
+          }
+        };
+        req.onsuccess = (e) => {
+          idb = e.target.result;
+          resolve(idb);
+        };
+        req.onerror = (e) => reject(e);
+      });
+    }
+
+    async function dbGet(key, defaultVal) {
+      return new Promise((resolve) => {
+        const tx = idb.transaction('store', 'readonly');
+        const storeObj = tx.objectStore('store');
+        const req = storeObj.get(key);
+        req.onsuccess = () => resolve(req.result !== undefined ? req.result : defaultVal);
+        req.onerror = () => resolve(defaultVal);
+      });
+    }
+
+    async function dbSet(key, val) {
+      return new Promise((resolve, reject) => {
+        const tx = idb.transaction('store', 'readwrite');
+        const storeObj = tx.objectStore('store');
+        const req = storeObj.put(val, key);
+        req.onsuccess = () => resolve();
+        req.onerror = (e) => reject(e);
+      });
+    }
+
+    /* Seed / Initial State */
+    let portalData = {
+      branding: {
+        heading: "Online Examination Portal",
+        image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&auto=format&fit=crop&q=80",
+        theme: "indigo"
+      },
+      subjects: ["Mathematics", "Physical Science", "Life Science", "English", "History", "Geography"],
+      teachers: [
+        { id: "T1", name: "Dr. Abhijit Sen", subject: "Mathematics", password: "Math@123" },
+        { id: "T2", name: "Mrs. Mousumi Roy", subject: "Physical Science", password: "Sci@123" }
+      ],
+      tests: [],
+      submissions: []
+    };
+
+    /* App runtime state */
+    let activeTeacher = null;
+    let activeExam = null;
+    let timerInterval = null;
+    let tempHeadingImageBase64 = null;
+    let newQPImagesBase64 = [];
+    let studentAnswerImagesBase64 = [];
+    let currentStudentSession = {};
+
+    /* Startup */
+    window.addEventListener('DOMContentLoaded', async () => {
+      await openDatabase();
+      const savedData = await dbGet('portal_state', null);
+      if (savedData) {
+        portalData = savedData;
+      } else {
+        await dbSet('portal_state', portalData);
+      }
+      applyTheme(portalData.branding.theme);
+      applyBranding();
+      showView('homeView');
+    });
+
+    async function syncState() {
+      await dbSet('portal_state', portalData);
+    }
+
+    /* High quality client-side image compression */
+    function compressImage(file, maxDimension = 1400, quality = 0.8) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              } else {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    /* View Switcher */
+    function showView(viewId) {
+      const views = [
+        'homeView',
+        'adminThemeView',
+        'adminTeacherMgmtView',
+        'adminDashboardView',
+        'teacherLoginView',
+        'teacherCreateTestView',
+        'teacherDashboardView',
+        'studentPortalView',
+        'examSessionView',
+        'answerUploadView',
+        'submissionSuccessView'
+      ];
+      views.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+      const target = document.getElementById(viewId);
+      if (target) target.classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    /* Dynamic Theme & Branding Application */
+    function applyTheme(themeName) {
+      const themes = ['theme-indigo', 'theme-emerald', 'theme-rose', 'theme-amber', 'theme-slate'];
+      document.body.classList.remove(...themes);
+      document.body.classList.add(`theme-${themeName}`);
+      portalData.branding.theme = themeName;
+    }
+
+    function previewTheme(themeName) {
+      applyTheme(themeName);
+    }
+
+    function applyBranding() {
+      document.getElementById('navHeading').innerText = portalData.branding.heading;
+      document.getElementById('homeHeading').innerText = portalData.branding.heading;
+      document.getElementById('navLogo').src = portalData.branding.image;
+      document.getElementById('heroImage').src = portalData.branding.image;
+    }
+
+
+    /* -------------------------------------------------------------
+       2. ADMIN LOGIC (Page 1 -> Page 2 -> Page 3)
+       ------------------------------------------------------------- */
+    function openAdminLoginModal() {
+      document.getElementById('adminPasswordInput').value = '';
+      document.getElementById('adminLoginModal').classList.remove('hidden');
+    }
+
+    function closeAdminLoginModal() {
+      document.getElementById('adminLoginModal').classList.add('hidden');
+    }
+
+    function verifyAdminLogin() {
+      const pwd = document.getElementById('adminPasswordInput').value;
+      if (pwd === "AbikAdmin@2001") {
+        closeAdminLoginModal();
+        // Load Page 1
+        document.getElementById('adminHeadingInput').value = portalData.branding.heading;
+        document.getElementById('adminHeadingPreview').src = portalData.branding.image;
+        tempHeadingImageBase64 = null;
+        showView('adminThemeView');
+      } else {
+        alert("Incorrect Admin Password!");
+      }
+    }
+
+    // Heading image file upload listener
+    document.getElementById('adminHeadingImageInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        tempHeadingImageBase64 = await compressImage(file, 1400, 0.85);
+        document.getElementById('adminHeadingPreview').src = tempHeadingImageBase64;
+      }
+    });
+
+    // Page 1 -> Page 2 ("keep as it is")
+    async function saveAdminAppearance(keepAsItIs) {
+      if (!keepAsItIs) {
+        const heading = document.getElementById('adminHeadingInput').value.trim();
+        if (heading) portalData.branding.heading = heading;
+        if (tempHeadingImageBase64) {
+          portalData.branding.image = tempHeadingImageBase64;
+        }
+        await syncState();
+        applyBranding();
+      }
+      renderAdminSubjectsAndTeachers();
+      showView('adminTeacherMgmtView'); // opens Page 2
+    }
+
+    function renderAdminSubjectsAndTeachers() {
+      const listEl = document.getElementById('adminSubjectList');
+      listEl.innerHTML = '';
+      portalData.subjects.forEach((sub, idx) => {
+        listEl.innerHTML += `
+          <li class="py-2.5 flex justify-between items-center text-sm">
+            <span class="font-medium text-gray-700"><i class="fa-solid fa-chevron-right text-xs text-gray-400 mr-2"></i>${sub}</span>
+            <button onclick="removeSubject(${idx})" class="text-red-500 hover:text-red-700 text-xs font-semibold">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </li>
+        `;
+      });
+
+      const subDropdown = document.getElementById('newTeacherSubject');
+      subDropdown.innerHTML = portalData.subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+    }
+
+    async function addSubject() {
+      const input = document.getElementById('newSubjectInput');
+      const val = input.value.trim();
+      if (!val) return;
+      if (!portalData.subjects.includes(val)) {
+        portalData.subjects.push(val);
+        await syncState();
+        renderAdminSubjectsAndTeachers();
+        input.value = '';
+      } else {
+        alert("Subject already exists!");
+      }
+    }
+
+    async function removeSubject(idx) {
+      if (confirm(`Remove subject: ${portalData.subjects[idx]}?`)) {
+        portalData.subjects.splice(idx, 1);
+        await syncState();
+        renderAdminSubjectsAndTeachers();
+      }
+    }
+
+    async function handleAddTeacher(e) {
+      e.preventDefault();
+      const name = document.getElementById('newTeacherName').value.trim();
+      const subject = document.getElementById('newTeacherSubject').value;
+      const password = document.getElementById('newTeacherPassword').value.trim();
+
+      const newTeacher = {
+        id: 'T_' + Date.now(),
+        name,
+        subject,
+        password
+      };
+      portalData.teachers.push(newTeacher);
+      await syncState();
+      alert(`Teacher ${name} added successfully for ${subject}!`);
+      document.getElementById('newTeacherName').value = '';
+      document.getElementById('newTeacherPassword').value = '';
+    }
+
+    // Page 2 -> Page 3 ("no teachers will add now")
+    function goToAdminDashboard() {
+      renderAdminDashboard();
+      showView('adminDashboardView'); // opens Page 3
+    }
+
+    function renderAdminDashboard() {
+      // 1. All Teachers & Passwords
+      const teachersBody = document.getElementById('adminTeachersTableBody');
+      teachersBody.innerHTML = portalData.teachers.length ? portalData.teachers.map((t, idx) => `
+        <tr class="hover:bg-gray-50">
+          <td class="p-3 font-semibold text-gray-800">${t.name}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-xs">${t.subject}</span></td>
+          <td class="p-3 font-mono font-bold text-gray-700">${t.password}</td>
+          <td class="p-3 text-right">
+            <button onclick="removeTeacher(${idx})" class="text-red-500 hover:text-red-700 text-xs">
+              <i class="fa-solid fa-trash-can"></i> Remove
+            </button>
+          </td>
+        </tr>
+      `).join('') : `<tr><td colspan="4" class="p-4 text-center text-gray-400">No teachers found</td></tr>`;
+
+      // 2. All Exams & Question Papers
+      const testsBody = document.getElementById('adminTestsTableBody');
+      testsBody.innerHTML = portalData.tests.length ? portalData.tests.map(test => `
+        <tr class="hover:bg-gray-50">
+          <td class="p-3 font-semibold text-gray-800">${test.name}</td>
+          <td class="p-3">${test.subject} • Class ${test.classNum}</td>
+          <td class="p-3">${test.teacherName}</td>
+          <td class="p-3">${test.duration} mins</td>
+          <td class="p-3 font-mono text-xs">${test.password}</td>
+          <td class="p-3">
+            <button onclick="previewQuestionPaperModal('${test.id}')" class="text-theme font-semibold hover:underline text-xs">
+              <i class="fa-solid fa-eye mr-1"></i> View Paper (${test.images.length} pages)
+            </button>
+          </td>
+          <td class="p-3 text-right">
+            <button onclick="removeExam('${test.id}')" class="text-red-500 hover:text-red-700 text-xs">
+              <i class="fa-solid fa-trash-can"></i> Remove
+            </button>
+          </td>
+        </tr>
+      `).join('') : `<tr><td colspan="7" class="p-4 text-center text-gray-400">No exams posted yet</td></tr>`;
+
+      // 3. Students Attended & Downloadable PDF
+      const subsBody = document.getElementById('adminSubmissionsTableBody');
+      subsBody.innerHTML = portalData.submissions.length ? portalData.submissions.map(s => `
+        <tr class="hover:bg-gray-50">
+          <td class="p-3 font-semibold text-gray-800">${s.studentName}</td>
+          <td class="p-3">Class ${s.classNum} • <span class="text-gray-500">${s.school}</span></td>
+          <td class="p-3 text-green-700 font-semibold"><i class="fa-brands fa-whatsapp mr-1"></i>${s.whatsapp}</td>
+          <td class="p-3">${s.examName}</td>
+          <td class="p-3 text-xs text-gray-500">${s.time}</td>
+          <td class="p-3 text-right">
+            <button onclick="downloadAnswerSheetPdf('${s.id}')" class="px-3 py-1 bg-theme bg-theme-hover text-white rounded-md text-xs font-semibold shadow">
+              <i class="fa-solid fa-download mr-1"></i> Download PDF
+            </button>
+          </td>
+        </tr>
+      `).join('') : `<tr><td colspan="6" class="p-4 text-center text-gray-400">No students attended tests yet</td></tr>`;
+    }
+
+    async function removeTeacher(idx) {
+      if (confirm(`Remove teacher: ${portalData.teachers[idx].name}?`)) {
+        portalData.teachers.splice(idx, 1);
+        await syncState();
+        renderAdminDashboard();
+      }
+    }
+
+    async function removeExam(testId) {
+      if (confirm("Are you sure you want to delete this test?")) {
+        portalData.tests = portalData.tests.filter(t => t.id !== testId);
+        await syncState();
+        renderAdminDashboard();
+        if (activeTeacher) renderTeacherDashboard();
+      }
+    }
+
+
+    /* -------------------------------------------------------------
+       3. TEACHER MODULE
+       ------------------------------------------------------------- */
+    function initTeacherLogin() {
+      const select = document.getElementById('teacherSelectDropdown');
+      select.innerHTML = '<option value="">-- Choose Your Name --</option>' +
+        portalData.teachers.map(t => `<option value="${t.id}">${t.name} (${t.subject})</option>`).join('');
+      document.getElementById('teacherPasswordInput').value = '';
+      showView('teacherLoginView');
+    }
+
+    function handleTeacherLogin(e) {
+      e.preventDefault();
+      const teacherId = document.getElementById('teacherSelectDropdown').value;
+      const pwd = document.getElementById('teacherPasswordInput').value;
+
+      const teacher = portalData.teachers.find(t => t.id === teacherId);
+      if (!teacher) {
+        alert("Please select a teacher name.");
+        return;
+      }
+      if (teacher.password === pwd) {
+        activeTeacher = teacher;
+        document.getElementById('teacherBadgeInfo').innerText = `${teacher.name} (${teacher.subject})`;
+        // Reset post exam form
+        newQPImagesBase64 = [];
+        document.getElementById('qpThumbnailsContainer').innerHTML = '';
+        document.getElementById('createTestName').value = '';
+        document.getElementById('createTestDuration').value = '';
+        document.getElementById('createTestPassword').value = '';
+        document.getElementById('createTestQPImages').value = '';
+
+        showView('teacherCreateTestView');
+      } else {
+        alert("Incorrect Teacher Password!");
+      }
+    }
+
+    function goToTeacherDashboard() {
+      renderTeacherDashboard();
+      showView('teacherDashboardView');
+    }
+
+    function logoutTeacher() {
+      activeTeacher = null;
+      showView('homeView');
+    }
+
+    async function previewQuestionPaperImages(e) {
+      const files = Array.from(e.target.files);
+      const container = document.getElementById('qpThumbnailsContainer');
+      container.innerHTML = '';
+      newQPImagesBase64 = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const compressed = await compressImage(files[i], 1200, 0.8);
+        newQPImagesBase64.push(compressed);
+
+        const thumb = document.createElement('div');
+        thumb.className = "relative border rounded-lg overflow-hidden h-20 bg-gray-100 flex items-center justify-center";
+        thumb.innerHTML = `
+          <img src="${compressed}" class="w-full h-full object-cover" />
+          <span class="absolute top-1 left-1 bg-black/70 text-white text-[10px] px-1 py-0.5 rounded font-bold">#${i + 1}</span>
+        `;
+        container.appendChild(thumb);
+      }
+    }
+
+    async function handlePostTest(e) {
+      e.preventDefault();
+      if (!newQPImagesBase64.length) {
+        alert("Please upload at least one picture of the question paper.");
+        return;
+      }
+
+      const classNum = document.getElementById('createTestClass').value;
+      const duration = parseInt(document.getElementById('createTestDuration').value);
+      const name = document.getElementById('createTestName').value.trim();
+      const password = document.getElementById('createTestPassword').value.trim();
+
+      const btn = document.getElementById('btnPublishExam');
+      btn.innerText = "Publishing Test...";
+      btn.disabled = true;
+
+      const newTest = {
+        id: 'EXAM_' + Date.now(),
+        teacherId: activeTeacher.id,
+        teacherName: activeTeacher.name,
+        subject: activeTeacher.subject,
+        classNum,
+        name,
+        duration,
+        password,
+        images: newQPImagesBase64
+      };
+
+      portalData.tests.push(newTest);
+      await syncState();
+
+      alert("Exam published successfully!");
+      btn.innerText = "Publish Exam";
+      btn.disabled = false;
+
+      goToTeacherDashboard();
+    }
+
+    function renderTeacherDashboard() {
+      if (!activeTeacher) return;
+      document.getElementById('teacherGreeting').innerText = `Welcome, ${activeTeacher.name}`;
+      document.getElementById('teacherSubjectBadge').innerText = `Subject: ${activeTeacher.subject}`;
+
+      // Strictly only tests posted by THIS teacher
+      const myTests = portalData.tests.filter(t => t.teacherId === activeTeacher.id);
+      const testsBody = document.getElementById('teacherTestsTableBody');
+      testsBody.innerHTML = myTests.length ? myTests.map(test => `
+        <tr class="hover:bg-gray-50">
+          <td class="p-3 font-semibold text-gray-800">${test.name}</td>
+          <td class="p-3">Class ${test.classNum}</td>
+          <td class="p-3">${test.duration} mins</td>
+          <td class="p-3 font-mono font-bold">${test.password}</td>
+          <td class="p-3">
+            <button onclick="previewQuestionPaperModal('${test.id}')" class="text-theme font-semibold hover:underline text-xs">
+              <i class="fa-solid fa-eye mr-1"></i> View Paper (${test.images.length} pages)
+            </button>
+          </td>
+          <td class="p-3 text-right">
+            <button onclick="removeExam('${test.id}')" class="text-red-500 hover:text-red-700 text-xs">
+              <i class="fa-solid fa-trash-can"></i> Remove
+            </button>
+          </td>
+        </tr>
+      `).join('') : `<tr><td colspan="6" class="p-4 text-center text-gray-400">You haven't posted any exams yet</td></tr>`;
+
+      // Strictly only students who attended THIS teacher's tests
+      const myTestIds = myTests.map(t => t.id);
+      const mySubmissions = portalData.submissions.filter(s => myTestIds.includes(s.testId));
+      const subsBody = document.getElementById('teacherSubmissionsTableBody');
+      subsBody.innerHTML = mySubmissions.length ? mySubmissions.map(s => `
+        <tr class="hover:bg-gray-50">
+          <td class="p-3 font-semibold text-gray-800">${s.studentName}</td>
+          <td class="p-3">Class ${s.classNum}</td>
+          <td class="p-3">${s.school}</td>
+          <td class="p-3 text-green-700 font-semibold"><i class="fa-brands fa-whatsapp mr-1"></i>${s.whatsapp}</td>
+          <td class="p-3 text-xs text-gray-500">${s.time}</td>
+          <td class="p-3 text-right">
+            <button onclick="downloadAnswerSheetPdf('${s.id}')" class="px-3 py-1 bg-theme bg-theme-hover text-white rounded text-xs font-semibold shadow">
+              <i class="fa-solid fa-download mr-1"></i> Download PDF
+            </button>
+          </td>
+        </tr>
+      `).join('') : `<tr><td colspan="6" class="p-4 text-center text-gray-400">No students have attended your tests yet</td></tr>`;
+    }
+
+
+    /* -------------------------------------------------------------
+       4. STUDENT MODULE (Clicking pictures -> auto PDF)
+       ------------------------------------------------------------- */
+    function initStudentPortal() {
+      const subSelect = document.getElementById('stdSubject');
+      subSelect.innerHTML = portalData.subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+
+      document.getElementById('stdName').value = '';
+      document.getElementById('stdSchool').value = '';
+      document.getElementById('stdWhatsapp').value = '';
+
+      filterAvailableTestsForStudent();
+      showView('studentPortalView');
+    }
+
+    function filterAvailableTestsForStudent() {
+      const cls = document.getElementById('stdClass').value;
+      const sub = document.getElementById('stdSubject').value;
+
+      const available = portalData.tests.filter(t => t.classNum === cls && t.subject === sub);
+      const testSelect = document.getElementById('stdAvailableTests');
+      const warning = document.getElementById('noTestWarning');
+
+      document.getElementById('examPasswordBox').classList.add('hidden');
+      document.getElementById('startExamButtonContainer').classList.add('hidden');
+      document.getElementById('stdExamPasswordInput').value = '';
+
+      if (available.length === 0) {
+        testSelect.innerHTML = '<option value="">No tests available</option>';
+        warning.classList.remove('hidden');
+      } else {
+        warning.classList.add('hidden');
+        testSelect.innerHTML = '<option value="">-- Choose an Exam --</option>' +
+          available.map(t => `<option value="${t.id}">${t.name} (${t.duration} mins)</option>`).join('');
+      }
+    }
+
+    function onStudentExamSelectionChange() {
+      const testId = document.getElementById('stdAvailableTests').value;
+      if (testId) {
+        document.getElementById('examPasswordBox').classList.remove('hidden');
+        document.getElementById('startExamButtonContainer').classList.add('hidden');
+        document.getElementById('stdExamPasswordInput').value = '';
+      } else {
+        document.getElementById('examPasswordBox').classList.add('hidden');
+        document.getElementById('startExamButtonContainer').classList.add('hidden');
+      }
+    }
+
+    function verifyStudentExamPassword() {
+      const testId = document.getElementById('stdAvailableTests').value;
+      const pwd = document.getElementById('stdExamPasswordInput').value.trim();
+      const test = portalData.tests.find(t => t.id === testId);
+
+      if (!test) return;
+
+      if (test.password === pwd) {
+        document.getElementById('startExamButtonContainer').classList.remove('hidden');
+        alert("Password correct! Click START TEST to begin.");
+      } else {
+        alert("Incorrect Exam Password. Please check with your teacher.");
+      }
+    }
+
+    function startStudentExamSession() {
+      const name = document.getElementById('stdName').value.trim();
+      const school = document.getElementById('stdSchool').value.trim();
+      const whatsapp = document.getElementById('stdWhatsapp').value.trim();
+      const testId = document.getElementById('stdAvailableTests').value;
+
+      if (!name || !school || !whatsapp) {
+        alert("Please enter Name, School, and WhatsApp number.");
+        return;
+      }
+
+      activeExam = portalData.tests.find(t => t.id === testId);
+      currentStudentSession = {
+        name,
+        classNum: activeExam.classNum,
+        school,
+        whatsapp,
+        testId: activeExam.id,
+        examName: activeExam.name
+      };
+
+      document.getElementById('sessionExamTitle').innerText = activeExam.name;
+      document.getElementById('sessionExamDetails').innerText = `${activeExam.subject} • Class ${activeExam.classNum} • Duration: ${activeExam.duration} mins`;
+
+      // Render all question paper images
+      const gallery = document.getElementById('qpImagesGallery');
+      gallery.innerHTML = '';
+      activeExam.images.forEach((imgSrc, i) => {
+        gallery.innerHTML += `
+          <div class="w-full flex flex-col items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50 shadow-sm">
+            <div class="w-full bg-gray-200 px-4 py-1.5 text-xs font-bold text-gray-700 flex justify-between">
+              <span>Question Page ${i + 1}</span>
+              <span>Total Pages: ${activeExam.images.length}</span>
+            </div>
+            <img src="${imgSrc}" class="w-full max-w-3xl object-contain" alt="Question Paper Page ${i + 1}" />
+          </div>
+        `;
+      });
+
+      // Start timer for allotted time
+      startExamCountdownTimer(activeExam.duration * 60);
+
+      showView('examSessionView');
+    }
+
+    function startExamCountdownTimer(seconds) {
+      clearInterval(timerInterval);
+      let remaining = seconds;
+      const display = document.getElementById('sessionTimerText');
+
+      function tick() {
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        display.textContent = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+        if (--remaining < 0) {
+          clearInterval(timerInterval);
+          alert("Allotted time has finished! Please click and upload pictures of your answer sheets.");
+          openAnswerUploadScreen();
+        }
+      }
+
+      tick();
+      timerInterval = setInterval(tick, 1000);
+    }
+
+    function finishTestEarly() {
+      if (confirm("Are you finished writing? Proceed to upload pictures of your answer sheets?")) {
+        clearInterval(timerInterval);
+        openAnswerUploadScreen();
+      }
+    }
+
+    function openAnswerUploadScreen() {
+      studentAnswerImagesBase64 = [];
+      updateAnswerThumbnailsGrid();
+      showView('answerUploadView');
+    }
+
+    // Direct camera capture handler
+    async function handleSingleCameraSnap(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const compressed = await compressImage(file, 1400, 0.85);
+      studentAnswerImagesBase64.push(compressed);
+      updateAnswerThumbnailsGrid();
+      e.target.value = ''; // reset to allow continuous snaps
+    }
+
+    // Multiple file select handler
+    async function handleMultipleAnswerPhotos(e) {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+      for (let i = 0; i < files.length; i++) {
+        const compressed = await compressImage(files[i], 1400, 0.85);
+        studentAnswerImagesBase64.push(compressed);
+      }
+      updateAnswerThumbnailsGrid();
+      e.target.value = '';
+    }
+
+    function removeAnswerPage(index) {
+      studentAnswerImagesBase64.splice(index, 1);
+      updateAnswerThumbnailsGrid();
+    }
+
+    function updateAnswerThumbnailsGrid() {
+      const grid = document.getElementById('answerImagesPreviewGrid');
+      const countEl = document.getElementById('capturedCount');
+      countEl.innerText = studentAnswerImagesBase64.length;
+
+      if (!studentAnswerImagesBase64.length) {
+        grid.innerHTML = `
+          <div id="emptyPhotosPrompt" class="col-span-3 text-center text-gray-400 text-xs py-8">
+            No answer sheets captured yet. Click or select pictures above.
+          </div>
+        `;
+        const btn = document.getElementById('btnSubmitAnswers');
+        btn.disabled = true;
+        btn.classList.replace('bg-green-600', 'bg-gray-400');
+        btn.classList.add('cursor-not-allowed');
+        return;
+      }
+
+      grid.innerHTML = '';
+      studentAnswerImagesBase64.forEach((img, i) => {
+        const thumb = document.createElement('div');
+        thumb.className = "relative border rounded-lg overflow-hidden h-24 bg-gray-100 flex items-center justify-center group";
+        thumb.innerHTML = `
+          <img src="${img}" class="w-full h-full object-cover" />
+          <span class="absolute top-1 left-1 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">Page ${i + 1}</span>
+          <button onclick="removeAnswerPage(${i})" class="absolute top-1 right-1 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center shadow opacity-80 hover:opacity-100">
+            <i class="fa-solid fa-times text-[10px]"></i>
+          </button>
+        `;
+        grid.appendChild(thumb);
+      });
+
+      const btn = document.getElementById('btnSubmitAnswers');
+      btn.disabled = false;
+      btn.classList.replace('bg-gray-400', 'bg-green-600');
+      btn.classList.remove('cursor-not-allowed');
+    }
+
+    /* Convert clicked pictures into multi-page PDF automatically */
+    async function convertAnswerSheetsToPdfAndSubmit() {
+      if (!studentAnswerImagesBase64.length) {
+        alert("Please click or upload at least one picture of your answer sheets.");
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitAnswers');
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Converting to PDF & Submitting...`;
+      btn.disabled = true;
+
+      try {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = 210;
+        const pageHeight = 297;
+
+        for (let i = 0; i < studentAnswerImagesBase64.length; i++) {
+          if (i > 0) pdf.addPage();
+          pdf.addImage(studentAnswerImagesBase64[i], 'JPEG', 5, 5, pageWidth - 10, pageHeight - 10, undefined, 'FAST');
+        }
+
+        const pdfDataUri = pdf.output('datauristring');
+
+        // Save submission into database
+        const newSubmission = {
+          id: 'SUB_' + Date.now(),
+          testId: currentStudentSession.testId,
+          examName: currentStudentSession.examName,
+          studentName: currentStudentSession.name,
+          classNum: currentStudentSession.classNum,
+          school: currentStudentSession.school,
+          whatsapp: currentStudentSession.whatsapp,
+          time: new Date().toLocaleString(),
+          pdfData: pdfDataUri
+        };
+
+        portalData.submissions.push(newSubmission);
+        await syncState();
+
+        // Show final page with exact text requirement
+        showView('submissionSuccessView');
+      } catch (err) {
+        console.error(err);
+        alert("An error occurred during PDF generation. Please try again.");
+      } finally {
+        btn.innerHTML = `<i class="fa-solid fa-file-pdf"></i> <span>Convert into PDF & Submit</span>`;
+      }
+    }
+
+
+    /* -------------------------------------------------------------
+       5. HELPERS (Question Paper Gallery Preview & PDF Download)
+       ------------------------------------------------------------- */
+    function previewQuestionPaperModal(testId) {
+      const test = portalData.tests.find(t => t.id === testId);
+      if (!test) return;
+
+      document.getElementById('qpGalleryModalTitle').innerText = `${test.name} • Class ${test.classNum} (${test.subject})`;
+      const container = document.getElementById('qpGalleryModalContent');
+      container.innerHTML = '';
+
+      test.images.forEach((imgSrc, i) => {
+        container.innerHTML += `
+          <div class="w-full flex flex-col items-center bg-white rounded-lg p-2 shadow-sm border">
+            <span class="text-xs font-bold text-gray-500 mb-2">Page ${i + 1} of ${test.images.length}</span>
+            <img src="${imgSrc}" class="max-w-full h-auto rounded" />
+          </div>
+        `;
+      });
+
+      document.getElementById('qpGalleryModal').classList.remove('hidden');
+    }
+
+    function closeQPGalleryModal() {
+      document.getElementById('qpGalleryModal').classList.add('hidden');
+    }
+
+    function downloadAnswerSheetPdf(submissionId) {
+      const sub = portalData.submissions.find(s => s.id === submissionId);
+      if (!sub) return;
+
+      const a = document.createElement('a');
+      a.href = sub.pdfData;
+      a.download = `${sub.studentName.replace(/\s+/g, '_')}_Class${sub.classNum}_AnswerSheet.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+</body>
+</html>
